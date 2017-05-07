@@ -19,7 +19,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 #import PhaseVocoder
 from scipy.io import wavfile
-#import pygame
+import pygame
+from pygame.locals import *
 
 from numpy import pi, sin, cos, exp, abs
 from scipy.io.wavfile import read, write
@@ -530,45 +531,6 @@ def pitchshift(snd_array, n, window_size=2**13, h=2**11):
     factor = 2**(1.0 * n / 12.0)
     stretched = stretch(snd_array, 1.0/factor, window_size, h)
     return speedx(stretched[window_size:], factor)
-    
-
-fps, bowl_sound = wavfile.read("clarinet.wav")
-tones = range(-25,25)
-transposed = [pitchshift(bowl_sound, n) for n in tones]
-'''            
-pygame.mixer.init(fps, -16, 1, 512) # so flexible ;)
-screen = pygame.display.set_mode((640,480)) # for the focus
-
-# Get a list of the order of the keys of the keyboard in right order.
-# ``keys`` is like ['Q','W','E','R' ...] 
-keys = open('typewriter.kb').read().split('\n')
-
-sounds = map(pygame.sndarray.make_sound, transposed)
-key_sound = dict( zip(keys, sounds) )
-is_playing = {k: False for k in keys}
-
-while True:
-
-    event =  pygame.event.wait()
-
-    if event.type in (pygame.KEYDOWN, pygame.KEYUP):
-        key = pygame.key.name(event.key)
-
-    if event.type == pygame.KEYDOWN:
-
-        if (key in key_sound.keys()) and (not is_playing[key]):
-            key_sound[key].play(fade_ms=50)
-            is_playing[key] = True
-
-        elif event.key == pygame.K_ESCAPE:
-            pygame.quit()
-            raise KeyboardInterrupt
-
-    elif event.type == pygame.KEYUP and key in key_sound.keys():
-
-        key_sound[key].fadeout(50) # stops with 50ms fadeout
-        is_playing[key] = False
-'''
 
 
 '''
@@ -633,10 +595,11 @@ pitchDetector2(X)
 '''
 
 #final project test out:
-
+'''
 X=readWaveFile("clarinet.wav")
 displaySignal(X)
 writeWaveFile("TianyangBefore.wav", X)
 StretchedFile = pitchshift(X, -2)
 displaySignal(StretchedFile)
 writeWaveFile("TianyangAfter.wav", StretchedFile)  
+'''
