@@ -396,14 +396,14 @@ def pitchDetector(X):
     plt.axhline(0, color='black')      # draw the 0 line in black
 
     # now find the peaks and store the lags in L and the coefficients in C
-    print(("peaks"),end='                                ')
+    #print(("peaks"),end='                                ')
     print('Frequency')
     for i in range(1,len(A)-1):
         if A[i]>A[i-1] and A[i]> A[i+1]:
             L = i
             C = A[i]
             plt.plot(L,C, 'ro')# will draw red dots exactly at the peaks
-            print((i,A[i]),end='          ')
+            #print((i,A[i]),end='          ')
             print(SR/i)
 
     # now print out the peaks and the corresponding frequencies
@@ -435,7 +435,7 @@ def pitchDetector2(X):
     plt.axhline(0, color='black')      # draw the 0 line in black
 
     # now find the peaks and store the lags in L and the coefficients in C
-    print(("peaks"),end='                                 ')
+    #print(("peaks"),end='                                 ')
     print('Frequency')
     preL = 0
     for i in range(1,len(A)-1):
@@ -453,7 +453,7 @@ def pitchDetector2(X):
                 Segment_length = (i - preL)*2
                 preL = L
                 plt.plot(L,C, 'ro')# will draw red dots exactly at the peaks
-                print((i,A[i]),end='          ')
+                #print((i,A[i]),end='          ')
                 print(SR/i)
                 break
             
@@ -603,3 +603,46 @@ StretchedFile = pitchshift(X, -2)
 displaySignal(StretchedFile)
 writeWaveFile("TianyangAfter.wav", StretchedFile)  
 '''
+
+fps, bowl_sound = wavfile.read("2a.wav")
+tones = range(-25,25)
+transposed = [pitchshift(bowl_sound, n) for n in tones]
+
+
+pygame.mixer.init(fps, -16, 1, 512) # so flexible ;)
+screen = pygame.display.set_mode((640,480)) # for the focus
+
+# Get a list of the order of the keys of the keyboard in right order.
+# ``keys`` is like ['Q','W','E','R' ...]
+keys = open('typewriter.kb').read().split('\n')
+print(keys)
+
+sounds = map(pygame.sndarray.make_sound, transposed)
+key_sound = dict(zip(keys, sounds))
+is_playing = {k: False for k in keys}
+
+while True:
+    pygame.event.pump()
+    keys = pygame.key.get_pressed()
+    event =  pygame.event.wait()
+    s = pygame.event.get()
+    #print(s)
+
+    if event.type in (pygame.KEYDOWN, pygame.KEYUP):
+        key = pygame.key.name(event.key)
+
+
+    if event.type == pygame.KEYDOWN:
+
+        if (key in key_sound.keys()) and (not is_playing[key]):
+            key_sound[key].play(fade_ms=50)
+            is_playing[key] = True
+
+        elif event.key == pygame.K_ESCAPE:
+            pygame.quit()
+            raise KeyboardInterrupt
+
+    elif event.type == pygame.KEYUP and key in key_sound.keys():
+
+        key_sound[key].fadeout(50) # stops with 50ms fadeout
+        is_playing[key] = False
