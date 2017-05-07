@@ -494,10 +494,10 @@ def speedx(sound_array, factor):
     indices = indices[indices < len(sound_array)].astype(int)
     return sound_array[ indices.astype(int) ]
 
-def stretch(sound_array, f, window_size):
+def stretch(sound_array, f, window_size=2**13, h=2**11):
     """ Stretches the sound by a factor `f` """
     N = len(sound_array)
-    h = N/4
+    h = N//4
 
     phase  = np.zeros(window_size)
     hanning_window = np.hanning(window_size)
@@ -517,15 +517,19 @@ def stretch(sound_array, f, window_size):
 
         # add to result
         i2 = int(i/f)
-        '''
-        a=result[i2 : i2 + window_size] 
-        b=hanning_window*a2_rephased
-        '''
-        np.add(result[i2 : i2 + window_size] , hanning_window*a2_rephased, out=result[i2 : i2 + window_size] , casting="unsafe")
+        result[i2 : i2 + window_size] += hanning_window*a2_rephased.real
+        
+        
 
     result = ((2**(16-4)) * result/result.max()) # normalize (16bit)
 
     return result.astype('int16')
+    
+def pitchshift(snd_array, n, window_size=2**13, h=2**11):
+    """ Changes the pitch of a sound by ``n`` semitones. """
+    factor = 2**(1.0 * n / 12.0)
+    stretched = stretch(snd_array, 1.0/factor, window_size, h)
+    return speedx(stretched[window_size:], factor)
             
 '''
 
@@ -546,7 +550,7 @@ pitchDetector(X)
 X=readWaveFile("clarinet.wav")
 displaySignal(X)
 writeWaveFile("TianyangBefore.wav", X)
-StretchedFile = stretch(X,0.5,)
+StretchedFile = pitchshift(X, 0.5, window_size=2**13, h=2**11)
 displaySignal(StretchedFile)
 writeWaveFile("TianyangAfter.wav", StretchedFile)
 
