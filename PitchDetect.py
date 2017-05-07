@@ -19,7 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 #import PhaseVocoder
 from scipy.io import wavfile
-import pygame
+#import pygame
 
 from numpy import pi, sin, cos, exp, abs
 from scipy.io.wavfile import read, write
@@ -521,7 +521,7 @@ def stretch(sound_array, f, window_size, h):
         i2 = int(i/f)
         result[i2 : i2 + window_size] += (hanning_window*a2_rephased).real
 
-    result = ((2**(16-1)) * result/result.max()) # normalize (16bit)
+    result = ((2**(16-2)) * result/result.max()) # normalize (16bit)
 
     return result.astype('int16')
     
@@ -633,11 +633,10 @@ pitchDetector2(X)
 '''
 
 #final project test out:
-'''
+
 X=readWaveFile("clarinet.wav")
 displaySignal(X)
 writeWaveFile("TianyangBefore.wav", X)
-StretchedFile = pitchshift(X, 3)
+StretchedFile = pitchshift(X, -2)
 displaySignal(StretchedFile)
 writeWaveFile("TianyangAfter.wav", StretchedFile)  
-'''        
