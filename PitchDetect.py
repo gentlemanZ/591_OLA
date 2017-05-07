@@ -591,39 +591,4 @@ X=readWaveFile("Genesis01.wav")
 X = X[int(12.1*SR):int(12.1*SR+0.05*SR)]
 pitchDetector2(X)
 '''
-
-
-'''
-Matlab To python
-'''
-
-waveobj = wave.open('clarinet.wav', mode=None)
-print(type(waveobj))
-
-
-
-
-def solatimescale(waveobj, posstart, posend, scale):
-    # SOLA Synchronous Overlap Add
-    # returns string obj to be written into .wav file and new frame
-    # scale works best btwn 0.5~1.5
-    numframes = posend - posstart
-    # find the size of the pieces
-    chuncksize = numframes / 20
-    overlap = (scale - 1) * chuncksize
-    # determine how much overlap note negative overlap just means space
-    remainder = numframes / chuncksize
-    # start to read
-    waveobj.setpos(posstart)
-    new_aud = waveobj.readframes(chuncksize)
-    datapos = posstart + chuncksize
-    # place over to time stretched new_aud
-    while datapos < posend - remainder - chuncksize:
-        waveobj.setpos(datapos - overlap)
-        new_aud += waveobj.readframes(chuncksize + overlap)
-        datapos += chuncksize
-
-    waveobj.setpos(datapos - overlap)
-    new_aud += waveobj.readframes(chuncksize + overlap + remainder)
-    return new_aud
-print(type(solatimescale(waveobj, 0, 2205, 1.25)))
+                
