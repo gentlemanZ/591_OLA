@@ -5,7 +5,7 @@ import pygame as pg
 kb_file = open("my_keyboard.kb", 'w')
 
 pg.init()
-screen = pg.display.set_mode((200, 200))
+screen = pg.display.set_mode((250, 250))
 print("Press the keys in the right order. Press Escape to finish.")
 while True:
     event = pg.event.wait()

@@ -20,6 +20,9 @@ import matplotlib.pyplot as plt
 #import PhaseVocoder
 from scipy.io import wavfile
 import pygame
+import argparse
+import sys
+import warnings
 from pygame.locals import *
 
 from numpy import pi, sin, cos, exp, abs
@@ -604,45 +607,83 @@ displaySignal(StretchedFile)
 writeWaveFile("TianyangAfter.wav", StretchedFile)  
 '''
 
-fps, bowl_sound = wavfile.read("2a.wav")
-tones = range(-25,25)
-transposed = [pitchshift(bowl_sound, n) for n in tones]
 
 
-pygame.mixer.init(fps, -16, 1, 512) # so flexible ;)
-screen = pygame.display.set_mode((640,480)) # for the focus
+def parse_arguments():
+    description = ('Use your computer keyboard as a "piano"')
 
-# Get a list of the order of the keys of the keyboard in right order.
-# ``keys`` is like ['Q','W','E','R' ...]
-keys = open('typewriter.kb').read().split('\n')
-print(keys)
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument(
+        '--wav', '-w',
+        metavar='FILE',
+        type=argparse.FileType('r'),
+        default='SteelString.wav',
+        help='WAV file (default: SteelString.wav)')
+    parser.add_argument(
+        '--keyboard', '-k',
+        metavar='FILE',
+        type=argparse.FileType('r'),
+        default='typewriter.kb',
+        help='keyboard file (default: typewriter.kb)')
+    parser.add_argument(
+        '--verbose', '-v',
+        action='store_true',
+        help='verbose mode')
 
-sounds = map(pygame.sndarray.make_sound, transposed)
-key_sound = dict(zip(keys, sounds))
-is_playing = {k: False for k in keys}
+    return (parser.parse_args(), parser)
 
-while True:
-    pygame.event.pump()
-    keys = pygame.key.get_pressed()
-    event =  pygame.event.wait()
-    s = pygame.event.get()
-    #print(s)
+def main():
+    # Parse command line arguments
+    (args, parser) = parse_arguments()
 
-    if event.type in (pygame.KEYDOWN, pygame.KEYUP):
-        key = pygame.key.name(event.key)
+    # Enable warnings from scipy if requested
+    if not args.verbose:
+        warnings.simplefilter('ignore')
+
+    #print type(args.wav.name)
+    #fps, sound = wavfile.read(args.wav.name)
+    fps, sound = wavfile.read('SteelString.wav')
+
+    tones = range(-25, 25)
+    sys.stdout.write('Transponding sound file... ')
+    sys.stdout.flush()
+    transposed_sounds = [pitchshift(sound, n) for n in tones]  # Change the pitch of the sound with the (-25, 25) tones
+    print('DONE')
+
+    # So flexible ;)
+    pygame.mixer.init(fps, -16, 1, 2048)
+    # For the focus
+    screen = pygame.display.set_mode((150, 150))
+
+    keys = args.keyboard.read().split('\n')
+    sounds = map(pygame.sndarray.make_sound, transposed_sounds)
+    key_sound = dict(zip(keys, sounds))
+
+    is_playing = {k: False for k in keys}
+
+    while True:
+        event = pygame.event.wait()
+
+        if event.type in (pygame.KEYDOWN, pygame.KEYUP):
+            key = pygame.key.name(event.key)
+
+        if event.type == pygame.KEYDOWN:
+            if (key in key_sound.keys()) and (not is_playing[key]):
+                key_sound[key].play(fade_ms=50)
+                is_playing[key] = True
+
+            elif event.key == pygame.K_ESCAPE:
+                pygame.quit()
+                raise KeyboardInterrupt
+
+        elif event.type == pygame.KEYUP and key in key_sound.keys():
+            # Stops with 50ms fadeout
+            key_sound[key].fadeout(50)
+            is_playing[key] = False
 
 
-    if event.type == pygame.KEYDOWN:
-
-        if (key in key_sound.keys()) and (not is_playing[key]):
-            key_sound[key].play(fade_ms=50)
-            is_playing[key] = True
-
-        elif event.key == pygame.K_ESCAPE:
-            pygame.quit()
-            raise KeyboardInterrupt
-
-    elif event.type == pygame.KEYUP and key in key_sound.keys():
-
-        key_sound[key].fadeout(50) # stops with 50ms fadeout
-        is_playing[key] = False
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Goodbye')
