@@ -623,8 +623,8 @@ def parse_arguments():
         '--keyboard', '-k',
         metavar='FILE',
         type=argparse.FileType('r'),
-        default='typewriter.kb',
-        help='keyboard file (default: typewriter.kb)')
+        default='typewriter2.kb',
+        help='keyboard file (default: typewriter2.kb)')
     parser.add_argument(
         '--verbose', '-v',
         action='store_true',
@@ -656,6 +656,7 @@ def main():
     screen = pygame.display.set_mode((150, 150))
 
     keys = args.keyboard.read().split('\n')
+    print(keys)
     sounds = map(pygame.sndarray.make_sound, transposed_sounds)
     key_sound = dict(zip(keys, sounds))
 
